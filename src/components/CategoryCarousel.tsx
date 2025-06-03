@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const categories = [
@@ -11,6 +12,55 @@ const categories = [
   { name: 'Adventure', icon: '🗺️', color: 'from-yellow-500 to-amber-500', slug: 'adventure' },
   { name: 'Shooter', icon: '🎯', color: 'from-indigo-500 to-purple-500', slug: 'shooter' },
 ];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const categoryVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 20,
+    scale: 0.8
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  },
+  hover: {
+    scale: 1.05,
+    y: -2,
+    transition: {
+      duration: 0.2,
+      ease: "easeOut"
+    }
+  }
+};
+
+const buttonVariants = {
+  hover: {
+    scale: 1.1,
+    backgroundColor: "rgba(51, 65, 85, 0.7)",
+    transition: {
+      duration: 0.2
+    }
+  },
+  tap: {
+    scale: 0.95
+  }
+};
 
 const CategoryCarousel = () => {
   const scrollContainer = React.useRef<HTMLDivElement>(null);
@@ -26,54 +76,80 @@ const CategoryCarousel = () => {
   };
 
   return (
-    <div className="relative mb-8">
-      <div className="flex items-center justify-between mb-4">
+    <motion.div 
+      className="relative mb-8"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      <motion.div 
+        className="flex items-center justify-between mb-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+      >
         <h2 className="text-2xl font-bold text-white font-orbitron">Browse Categories</h2>
         <div className="flex space-x-2">
-          <button
+          <motion.button
             onClick={() => scroll('left')}
             className="bg-slate-800/50 hover:bg-slate-700/50 text-white p-2 rounded-full transition-colors"
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
           >
             <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => scroll('right')}
             className="bg-slate-800/50 hover:bg-slate-700/50 text-white p-2 rounded-full transition-colors"
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
           >
             <ChevronRight className="w-5 h-5" />
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
       
-      <div
+      <motion.div
         ref={scrollContainer}
         className="flex space-x-4 overflow-x-auto scrollbar-hide pb-2"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
       >
-        {categories.map((category, index) => (
+        {categories.map((category) => (
           <Link
             key={category.name}
             to={category.slug ? `/categories?filter=${category.slug}` : '/categories'}
             className="flex-shrink-0 group"
           >
-            <div
+            <motion.div
               className={`
                 bg-gradient-to-r ${category.color} p-4 rounded-xl 
-                min-w-[140px] text-center hover:scale-105 transition-all duration-300
-                shadow-lg hover:shadow-xl hover:animate-glow
-                animate-slide-up
+                min-w-[140px] text-center shadow-lg hover:shadow-xl
               `}
-              style={{ animationDelay: `${index * 0.1}s` }}
+              variants={categoryVariants}
+              whileHover="hover"
+              whileTap={{ scale: 0.98 }}
             >
-              <div className="text-3xl mb-2">{category.icon}</div>
+              <motion.div 
+                className="text-3xl mb-2"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 260, damping: 20 }}
+              >
+                {category.icon}
+              </motion.div>
               <div className="text-white font-semibold font-orbitron text-sm">
                 {category.name}
               </div>
-            </div>
+            </motion.div>
           </Link>
         ))}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
