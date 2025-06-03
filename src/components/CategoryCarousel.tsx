@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -14,10 +14,12 @@ const categories = [
 ];
 
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
+    y: 0,
     transition: {
+      duration: 0.6,
       staggerChildren: 0.1,
       delayChildren: 0.2
     }
@@ -36,25 +38,36 @@ const categoryVariants = {
     scale: 1,
     transition: {
       duration: 0.5,
-      ease: "easeOut"
+      type: "spring",
+      stiffness: 260,
+      damping: 20
     }
-  },
+  }
+};
+
+const hoverVariants = {
   hover: {
     scale: 1.05,
-    y: -2,
+    y: -3,
     transition: {
       duration: 0.2,
-      ease: "easeOut"
+      type: "spring",
+      stiffness: 400
     }
+  },
+  tap: {
+    scale: 0.98
   }
 };
 
 const buttonVariants = {
   hover: {
     scale: 1.1,
-    backgroundColor: "rgba(51, 65, 85, 0.7)",
+    backgroundColor: "rgba(51, 65, 85, 0.8)",
     transition: {
-      duration: 0.2
+      duration: 0.2,
+      type: "spring",
+      stiffness: 400
     }
   },
   tap: {
@@ -63,12 +76,14 @@ const buttonVariants = {
 };
 
 const CategoryCarousel = () => {
-  const scrollContainer = React.useRef<HTMLDivElement>(null);
+  const scrollContainer = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainer.current) {
       const scrollAmount = 200;
-      scrollContainer.current.scrollBy({
+      const container = scrollContainer.current;
+      
+      container.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
       });
@@ -78,77 +93,93 @@ const CategoryCarousel = () => {
   return (
     <motion.div 
       className="relative mb-8"
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
     >
       <motion.div 
         className="flex items-center justify-between mb-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.4 }}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
       >
-        <h2 className="text-2xl font-bold text-white font-orbitron">Browse Categories</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-white font-orbitron">Browse Categories</h2>
         <div className="flex space-x-2">
           <motion.button
             onClick={() => scroll('left')}
-            className="bg-slate-800/50 hover:bg-slate-700/50 text-white p-2 rounded-full transition-colors"
+            className="bg-slate-800/50 hover:bg-slate-700/50 text-white p-2 rounded-full transition-colors backdrop-blur-sm border border-slate-700/50"
             variants={buttonVariants}
             whileHover="hover"
             whileTap="tap"
+            aria-label="Scroll left"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </motion.button>
           <motion.button
             onClick={() => scroll('right')}
-            className="bg-slate-800/50 hover:bg-slate-700/50 text-white p-2 rounded-full transition-colors"
+            className="bg-slate-800/50 hover:bg-slate-700/50 text-white p-2 rounded-full transition-colors backdrop-blur-sm border border-slate-700/50"
             variants={buttonVariants}
             whileHover="hover"
             whileTap="tap"
+            aria-label="Scroll right"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </motion.button>
         </div>
       </motion.div>
       
-      <motion.div
+      <div
         ref={scrollContainer}
-        className="flex space-x-4 overflow-x-auto scrollbar-hide pb-2"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+        className="flex space-x-3 sm:space-x-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory scroll-smooth"
+        style={{ 
+          scrollbarWidth: 'none', 
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}
       >
-        {categories.map((category) => (
+        {categories.map((category, index) => (
           <Link
             key={category.name}
             to={category.slug ? `/categories?filter=${category.slug}` : '/categories'}
-            className="flex-shrink-0 group"
+            className="flex-shrink-0 group snap-start"
           >
             <motion.div
               className={`
-                bg-gradient-to-r ${category.color} p-4 rounded-xl 
-                min-w-[140px] text-center shadow-lg hover:shadow-xl
+                bg-gradient-to-r ${category.color} p-3 sm:p-4 rounded-xl 
+                min-w-[120px] sm:min-w-[140px] text-center shadow-lg 
+                hover:shadow-xl hover:shadow-current/20 backdrop-blur-sm
+                border border-white/10
               `}
               variants={categoryVariants}
               whileHover="hover"
-              whileTap={{ scale: 0.98 }}
+              whileTap="tap"
+              custom={index}
             >
               <motion.div 
-                className="text-3xl mb-2"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.3, type: "spring", stiffness: 260, damping: 20 }}
+                className="text-2xl sm:text-3xl mb-2"
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ 
+                  delay: index * 0.1 + 0.3, 
+                  type: "spring", 
+                  stiffness: 260, 
+                  damping: 20 
+                }}
               >
                 {category.icon}
               </motion.div>
-              <div className="text-white font-semibold font-orbitron text-sm">
+              <motion.div 
+                className="text-white font-semibold font-orbitron text-xs sm:text-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.1 + 0.5, duration: 0.3 }}
+              >
                 {category.name}
-              </div>
+              </motion.div>
             </motion.div>
           </Link>
         ))}
-      </motion.div>
+      </div>
     </motion.div>
   );
 };
