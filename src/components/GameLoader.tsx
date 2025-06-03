@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Play, Clock } from 'lucide-react';
 import AdSlot from './AdSlot';
 
@@ -11,12 +11,19 @@ interface GameLoaderProps {
 const GameLoader: React.FC<GameLoaderProps> = ({ onLoadComplete, gameTitle }) => {
   const [countdown, setCountdown] = useState(5);
 
+  const handleLoadComplete = useCallback(() => {
+    onLoadComplete();
+  }, [onLoadComplete]);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          onLoadComplete();
+          // Use setTimeout to avoid setState during render
+          setTimeout(() => {
+            handleLoadComplete();
+          }, 0);
           return 0;
         }
         return prev - 1;
@@ -24,7 +31,7 @@ const GameLoader: React.FC<GameLoaderProps> = ({ onLoadComplete, gameTitle }) =>
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [onLoadComplete]);
+  }, [handleLoadComplete]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center p-4">
@@ -35,7 +42,7 @@ const GameLoader: React.FC<GameLoaderProps> = ({ onLoadComplete, gameTitle }) =>
         
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700/50 max-w-md mx-auto">
           <div className="mb-6">
-            <div className="bg-gradient-to-r from-blue-500 to-emerald-500 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+            <div className="bg-gradient-to-r from-blue-500 to-emerald-500 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center animate-pulse">
               <Play className="w-10 h-10 text-white fill-current" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">
