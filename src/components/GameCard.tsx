@@ -120,10 +120,16 @@ const GameCard: React.FC<GameCardProps> = ({ game, index = 0 }) => {
               <motion.span 
                 className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold font-pixel"
                 initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 + 0.3, duration: 0.3 }}
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
+                animate={{ 
+                  opacity: 1, 
+                  x: 0,
+                  scale: [1, 1.05, 1]
+                }}
+                transition={{ 
+                  delay: index * 0.1 + 0.3, 
+                  duration: 0.3,
+                  scale: { repeat: Infinity, duration: 2 }
+                }}
               >
                 ⭐ FEATURED
               </motion.span>
